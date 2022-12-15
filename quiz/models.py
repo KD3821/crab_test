@@ -18,4 +18,4 @@ class Question(models.Model):
 class Option(models.Model):
     text = CharField(max_length=200)
     question = ForeignKey(Question, on_delete=models.CASCADE)
-    correct = BooleanField(default=False)
+    is_correct = BooleanField(default=False)

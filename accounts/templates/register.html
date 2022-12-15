@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация пользователя{% endblock %}
+
+{% block content %}
+    <div class="card col-6 mx-auto text-center">
+        <div class="card-header">Регистрация нового пользователь:</div>
+        <div class="card-body">
+            <div class="my_card">
+                <form class="form-login" method="POST" action="{% url 'accounts:reg_ok' %}" >
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        {{ form.email }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form.name }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form.password }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form.password2 }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зарегистрировать</button>
+                </form>
+            </div>
+        </div>
+        {% if form.errors %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert-danger">
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <div class="alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+{% endblock %}

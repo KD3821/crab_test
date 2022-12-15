@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        <h3>Все пользователи сервиса:</h3>
+        <table class="table">
+            <tbody>
+                {% for obj in users %}
+                <tr>
+                    <td><a href="#" role="button" class="btn btn-success">{{obj.email}}</a></td>
+                    <td><a href="{% url 'all_users' %}" role="button" class="btn btn-info">Кнопка</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <a href="{% url 'all_topics' %}"role="button" class="btn btn-info" >Кнопка</a>
+    </div>
+</div>
+{% endblock %}

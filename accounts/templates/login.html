@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %} Войти в ЛК {% endblock %}
+
+{% block content %}
+
+    <div class="card col-6 mx-auto text-center">
+
+        <div class="card-header">Войти в личный кабинет:</div>
+        <div class="card-body">
+            <div class="my_card">
+                <form class="form-login" method="POST" action="{% url 'accounts:login' %}" >
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        {{ form.email }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form.password }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                </form>
+            </div>
+        </div>
+        {% if form.errors %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <span class="alert-danger">
+                        <strong>{{ error|escape }}</strong>
+                    </span>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <span class="alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+{% endblock %}
