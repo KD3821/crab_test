@@ -11,7 +11,7 @@
                 {% for obj in topics %}
                 <tr>
                     <td><a href="#" role="button" class="btn btn-success">{{obj.name}}</a></td>
-                    <td><a href="{% url 'all_users' %}" role="button" class="btn btn-info">Кнопка</a></td>
+                    <td><a href="{% url 'accounts:all_users' %}" role="button" class="btn btn-info">Кнопка</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

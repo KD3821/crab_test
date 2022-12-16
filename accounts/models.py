@@ -7,9 +7,11 @@ from django.contrib.auth.hashers import make_password, identify_hasher
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, email, password=None, name=None, is_active=True, is_staff=False, is_admin=False):
+    def create_user(self, email, name, password=None, is_active=True, is_staff=False, is_admin=False):
         if not email:
             raise ValueError('Укажите email')
+        if not name:
+            raise ValueError('Укажите имя')
         if not password:
             raise ValueError('Задайте пароль')
         email = self.normalize_email(email)
@@ -21,25 +23,25 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, name=None):
-        user = self.create_user(email, name=name, password=password, is_staff=True, is_admin=True)
+    def create_superuser(self, email, name, password=None):
+        user = self.create_user(email, name, password=password, is_staff=True, is_admin=True)
         return user
 
-    def create_staff(self, email, password=None, name=None):
-        user = self.create_user(email, name=name, password=password, is_staff=True, is_admin=False)
+    def create_staff(self, email, name, password=None):
+        user = self.create_user(email, name, password=password, is_staff=True, is_admin=False)
         return user
 
 
 class User(AbstractBaseUser):
     email = EmailField(max_length=255, unique=True)
-    name = CharField(max_length=255, blank=True, null=True)
+    name = CharField(max_length=255)
     staff = BooleanField(default=False)
     admin = BooleanField(default=False)
     is_active = BooleanField(default=True)
     timestamp = DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['name']
 
     objects = UserManager()
 
@@ -51,9 +53,7 @@ class User(AbstractBaseUser):
         return self.email
 
     def get_name(self):
-        if self.name:
-            return self.name
-        return self.email
+        return self.name
 
     def has_perm(self, perm, obj=None):
         return True

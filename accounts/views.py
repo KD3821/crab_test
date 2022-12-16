@@ -17,7 +17,7 @@ def login_view(request):
         password = data.get('password')
         user = authenticate(email=email, password=password)
         login(request, user)
-        return redirect('all_topics')
+        return redirect('quiz:all_topics')
     return render(request, 'login.html', {'form': form})
 
 
