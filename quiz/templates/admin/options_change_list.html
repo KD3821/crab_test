@@ -1,0 +1,34 @@
+{% extends 'admin/change_list.html' %}
+
+{% block object-tools %}
+    <form id="add-option-form" method="POST">
+        {% csrf_token %}
+        <label>Добавьте ответ (макс.кол-во: 70 символов)<br>
+        <input name="add-option" class="vTextField" size="70">
+        </label>
+        <input type="checkbox" name="add_is_correct" id="new_is_correct" value="cor">
+        <label class="vCheckboxLabel" for="new_is_correct">Is correct</label>
+        <button class="button" type="submit">Добавить ответ</button>
+    </form>
+    <br>
+    <script>
+        let addOptionForm = document.querySelector('#add-option-form')
+        addOptionForm.querySelector('input[name="add-option"]').addEventListener('change', function(e){
+            let addOption = e.target.value
+            let addQuestionArray = window.location.search.split('=')
+            let addQuestion = addQuestionArray[1]
+            addOptionForm.action = 'new/'+ addQuestion + '/' + addOption + '/'
+        })
+        addOptionForm.addEventListener('submit', function(){
+            let isCorrect = null
+            let addIsCorrect = document.getElementById('new_is_correct')
+            if (addIsCorrect.checked == true) {
+                isCorrect = document.getElementById('new_is_correct').value
+            } else {
+                isCorrect = 'reg'
+            }
+            addOptionForm.action = addOptionForm.action + isCorrect + '/'
+        })
+    </script>
+{{ block.super }}
+{% endblock object-tools %}

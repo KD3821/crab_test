@@ -13,7 +13,7 @@ class Topic(models.Model):
 
 
 class Quiz(models.Model):
-    name = CharField(max_length=200)
+    name = CharField(max_length=200, verbose_name='ТЕСТ')
     topic = ForeignKey(Topic, verbose_name='НАБОР', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
