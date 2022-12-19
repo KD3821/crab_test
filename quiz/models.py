@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import CharField, ForeignKey, BooleanField
 
 class Topic(models.Model):
-    name = CharField(max_length=200)
+    name = CharField(max_length=200, unique=True)
 
     class Meta:
         verbose_name = 'Набор тестов'
@@ -13,7 +13,7 @@ class Topic(models.Model):
 
 
 class Quiz(models.Model):
-    name = CharField(max_length=200, verbose_name='ТЕСТ')
+    name = CharField(max_length=200, verbose_name='ТЕСТ', unique=True)
     topic = ForeignKey(Topic, verbose_name='НАБОР', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
@@ -27,18 +27,15 @@ class Quiz(models.Model):
 class Question(models.Model):
     text = CharField(max_length=500)
     quiz = ForeignKey(Quiz, verbose_name='ТЕСТ', on_delete=models.SET_NULL, null=True, blank=True)
-    topic_name = CharField(max_length=200, verbose_name='НАБОР', null=True, blank=True)
+    topic_name = ForeignKey(Topic, verbose_name='НАБОР', on_delete=models.SET_NULL, null=True, blank=True)
+    accepted = BooleanField(default=False, verbose_name="Добавлен в тест")
 
     class Meta:
-        verbose_name = 'Вопрос'
-        verbose_name_plural = 'Вопросы'
+        verbose_name = 'Вопрос-Ответы'
+        verbose_name_plural = 'Вопросы-Ответы'
 
     def save(self, *args, **kwargs):
-        if self.topic_name is None:
-            qz = Quiz.objects.filter(id=self.quiz_id).values().first()
-            tp_id = qz['topic_id']
-            tp = Topic.objects.filter(id=tp_id).values().first()
-            self.topic_name = tp['name']
+        self.topic_name = self.quiz.topic
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -46,12 +43,11 @@ class Question(models.Model):
 
 
 class Option(models.Model):
-    answer_text = CharField(max_length=200)
-    question = ForeignKey(Question, on_delete=models.CASCADE)
-    is_correct = BooleanField(default=False)
+    answer_text = CharField(max_length=200,  verbose_name='Ответ')
+    question = ForeignKey(Question,  verbose_name='Вопрос', on_delete=models.CASCADE)
+    is_correct = BooleanField(default=False, verbose_name='правильный ответ')
     quiz_name = CharField(max_length=200, verbose_name='ТЕСТ', null=True, blank=True)
     topic_name = CharField(max_length=200, verbose_name='НАБОР', null=True, blank=True)
-
 
     class Meta:
         verbose_name = 'Ответ'

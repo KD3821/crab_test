@@ -3,11 +3,11 @@
 {% block object-tools %}
     <form id="add-option-form" method="POST">
         {% csrf_token %}
-        <label>Добавьте ответ (макс.кол-во: 70 символов)<br>
-        <input name="add-option" class="vTextField" size="70">
-        </label>
+        <label>Добавить ОТВЕТ для вопроса: <b>{{ question_text }} - [ Набор: {{question_topic}} - Тест: {{question_quiz}} ]</b><br><br>
+        <input name="add-option" class="vTextField" size="50" required><br>(макс.кол-во: 50 символов)
+        </label><br><br>
         <input type="checkbox" name="add_is_correct" id="new_is_correct" value="cor">
-        <label class="vCheckboxLabel" for="new_is_correct">Is correct</label>
+        <label class="vCheckboxLabel" for="new_is_correct">Правильный</label><br>
         <button class="button" type="submit">Добавить ответ</button>
     </form>
     <br>
@@ -31,4 +31,20 @@
         })
     </script>
 {{ block.super }}
+
 {% endblock object-tools %}
+{% block object-tools-items %}
+    <form id="save-options-form" method="POST">
+        {% csrf_token %}
+        <button class="button" type="submit" style="background-color: green;">Добавить вопрос в тест</button>
+    </form>
+    <script>
+        let saveOptionsLink = window.location.href
+        let saveQuestionArray = saveOptionsLink.split('=')
+        let saveQuestion = saveQuestionArray[1]
+        let saveOptionsForm = document.querySelector('#save-options-form')
+        saveOptionsForm.addEventListener('submit', function(){
+            saveOptionsForm.action = 'save/'+ saveQuestion + '/'
+        })
+    </script>
+{% endblock object-tools-items %}
