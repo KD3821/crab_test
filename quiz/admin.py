@@ -10,23 +10,65 @@ from django.utils.html import format_html
 def make_correct(modeladmin, request, queryset):
     queryset.update(is_correct=True)
 
+
 @admin.action(description='Неправильный ответ')
 def make_incorrect(modeladmin, request, queryset):
     queryset.update(is_correct=False)
 
 
-class QuestionInline(admin.TabularInline):
+
+def unbound_option_text(obj):
+    # return obj.option_set.all()
+    qs = obj.option_set.all().values()
+    count = obj.option_set.count()
+    return {'count': count, 'options': qs}
+
+
+class QuestionInline(admin.StackedInline):
     model = Question
+    fields = ['text', 'topic_name', 'quiz', 'accepted', 'option_text', 'admin_option_text', unbound_option_text]
+    readonly_fields = ['accepted', 'option_text', 'admin_option_text', unbound_option_text]
+    raw_id_fields = ['quiz']
+    extra = 0
 
 
-class QuizInline(admin.TabularInline):
+    def admin_option_text(self, obj):
+        # return obj.option_set.all()
+        qs = obj.option_set.all().values()
+        count = obj.option_set.count()
+        return {'count': count, 'options': qs}
+
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = (
+            (None, {
+                'fields': ('text', 'quiz', 'accepted', 'option_text')
+            }),
+            ('ответы', {
+                'classes': ('collapse',),
+                'fields': ('option_text', 'accepted'),
+            }),
+        )
+        return fieldsets
+
+
+class QuizInline(admin.StackedInline):
     model = Quiz
+    extra = 0
+
+
+class OptionInline(admin.TabularInline):
+    model = Option
 
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
+    change_form_template = 'admin/topics_change_form.html'
+
     list_display = ['view_edit_test_link', 'view_tests_link']
     inlines = [QuizInline, QuestionInline]
+
+    save_on_top = True
 
     def view_tests_link(self, obj):
         count = obj.quiz_set.count()
@@ -46,7 +88,6 @@ class TopicAdmin(admin.ModelAdmin):
                            'color: blue;">{}</button></a>', url, obj.name)
 
     view_edit_test_link.short_description = "Набор тестов"
-
 
 
 @admin.register(Quiz)
@@ -71,12 +112,13 @@ class QuizAdmin(admin.ModelAdmin):
     view_questions_link.short_description = "Вопросы"
 
 
-
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ['text', 'accepted', 'quiz', 'view_answers_link']
     list_filter = ['topic_name', 'quiz']
     exclude = ['topic_name']
+    readonly_fields = ['accepted']
+    # inlines = [OptionInline]
 
     def view_answers_link(self, obj):
         count = obj.option_set.count()
@@ -93,6 +135,7 @@ class QuestionAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super(QuestionAdmin, self).get_form(request, obj, **kwargs)
         form.base_fields['quiz'].queryset = Quiz.objects.filter(topic__name=obj.topic_name)
+        # form.base_fields['quiz'].queryset = Option.objects.filter(question=obj.id)
         return form
 
     def has_add_permission(self, request):

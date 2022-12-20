@@ -38,6 +38,12 @@ class Question(models.Model):
         self.topic_name = self.quiz.topic
         super().save(*args, **kwargs)
 
+    def option_text(self):
+        # return self.option_set.all()
+        qs = self.option_set.all().values()
+        count = self.option_set.count()
+        return {'count': count, 'options': qs}
+
     def __str__(self):
         return self.text
 
@@ -65,4 +71,4 @@ class Option(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.answer_text} - {self.question}'
+        return self.answer_text
