@@ -4,10 +4,15 @@
 {% block object-tools %}
     <form id="add-option-form" method="POST">
         {% csrf_token %}
-        <label>Добавить ОТВЕТ для вопроса: <b>{{ question_text }}</b> - <span style="background-color: lightgrey;
-        border: 1px solid lightblue;"><img src="/static/admin/img/tooltag-arrowright.svg" alt="для" color="blue">
-            Набор: <b>{{question_topic}}</b> - Тест: <b>{{question_quiz}}</b> - добавлен в тест: <b>{{question_accepted}}</b></span><br><br>
-        <input name="add-option" class="vTextField" size="50" required><br>(макс.кол-во: 50 символов)
+        <span style="background-color: lightgrey; border: 1px solid lightblue;">
+            <img src="/static/admin/img/tooltag-arrowright.svg" alt="для">
+            Набор: <b>{{question_topic}}</b>
+            <img src="/static/admin/img/tooltag-arrowright.svg" alt="для">
+            Тест: <b>{{question_quiz}}</b>
+            <img src="/static/admin/img/tooltag-arrowright.svg" alt="для">
+            вопрос активирован: <b>{{question_accepted}}</b></span><br><br>
+        <label>Добавить ОТВЕТ для вопроса: <b>{{ question_text }}</b><br>
+        <input name="add-option" class="vTextField" size="50" required placeholder="Введите текст ответа"><br>(макс.кол-во: 50 символов)
         </label><br><br>
         <input type="checkbox" name="add_is_correct" id="new_is_correct" value="cor">
         <label class="vCheckboxLabel" for="new_is_correct">Правильный</label><br>
@@ -39,7 +44,7 @@
 {% block object-tools-items %}
     <form id="save-options-form" method="POST">
         {% csrf_token %}
-        <button class="button" type="submit" style="background-color: green;">Добавить вопрос<br>в тест</button>
+        <button class="button" type="submit" style="background-color: green;">Активировать вопрос</button>
     </form>
     <script>
         let saveOptionsLink = window.location.href

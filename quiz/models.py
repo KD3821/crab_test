@@ -28,10 +28,10 @@ class Quiz(models.Model):
 
 
 class Question(models.Model):
-    text = CharField(max_length=500)
+    text = CharField(max_length=500, verbose_name='ВОПРОС')
     quiz = ForeignKey(Quiz, verbose_name='ТЕСТ', on_delete=models.SET_NULL, null=True, blank=True)
     topic_name = ForeignKey(Topic, verbose_name='НАБОР', on_delete=models.SET_NULL, null=True, blank=True)
-    accepted = BooleanField(default=False, verbose_name="Добавлен в тест")
+    accepted = BooleanField(default=False, verbose_name="Активирован")
 
     class Meta:
         verbose_name = 'Вопрос-Ответы'
@@ -64,6 +64,7 @@ class Question(models.Model):
             html_ok = '<span><img src="/static/admin/img/icon-alert.svg" alt="Упс!">Сохраните ВОПРОС!</span>'
         return format_html(html_ok)
 
+    option_text.short_description = "Варианты ответов"
 
     def __str__(self):
         return self.text

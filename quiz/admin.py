@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.contrib.admin import SimpleListFilter
 from django.http import HttpResponseRedirect
 from .models import *
 from django.urls import reverse, path
@@ -10,6 +11,21 @@ from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
 
+# class QuizFilter(SimpleListFilter):
+#     title = 'Quiz Filter'
+#     parameter_name = 'topic'
+#
+#     def lookups(self, request, model_admin):
+#         return ('topic', 'quiz_name')
+#
+#     def queryset(self, request, queryset):
+#         print(self.value())
+#         if not self.value():
+#             return queryset
+#         if self.value() == 'topic_name':
+#             return queryset.filter(name=self.value())
+#         if self.value() == '-':
+#             return queryset.filter(topic=None)
 
 @admin.action(description='Отметить как ПРАВИЛЬНЫЙ ответ')
 def make_correct(modeladmin, request, queryset):
@@ -34,27 +50,24 @@ class QuestionInline(admin.StackedInline):
 
     def view_answers_href(self, obj):
         try:
-            q = Question.objects.filter(text=obj)[0:1].get()
-            if q:
-                count = obj.option_set.count()
-                url = (
-                        reverse("admin:quiz_option_changelist")
-                        + "?"
-                        + urlencode({"question__id": f"{obj.id}"})
-                )
-                return format_html('всего ответов: {} <br><a href="{}" class="addlink">'
-                                   '<button type="button" class="button">Добавить | Редактировать ОТВЕТЫ</button></a>',
-                                   count, url)
+            Question.objects.filter(text=obj)[0:1].get()
+            count = obj.option_set.count()
+            url = (
+                    reverse("admin:quiz_option_changelist")
+                    + "?"
+                    + urlencode({"question__id": f"{obj.id}"})
+            )
+            return format_html('всего ответов: {} <br><a href="{}" class="addlink">'
+                               '<button type="button" class="button">Добавить | Редактировать ОТВЕТЫ</button></a>',
+                               count, url)
         except Question.DoesNotExist:
             return format_html('Добавление | Редактирование ОТВЕТОВ возможно только после сохранения вопроса.'
-                               '(кнопка [Сохранить] внизу страницы)')
+                               '(кнопка "Сохранить" внизу страницы)')
 
     view_answers_href.short_description = "Подробнее"
 
     def admin_option_text(self, obj):
         return True
-
-    # admin_option_text.short_description = "Варики"
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = (
@@ -84,7 +97,27 @@ class TopicAdmin(admin.ModelAdmin):
 
     list_display = ['view_edit_test_link', 'view_tests_link']
     inlines = [QuizInline, QuestionInline]
-    readonly_fields = ['name']
+    # readonly_fields = ['name']
+    # list_filter = [QuizFilter]
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('newtopic/<str:add_topic>/', self.save_model)
+        ]
+        return custom_urls + urls
+
+    # def save_model(self, request, obj, form, change):
+    #     print(self)
+    #     super().save_model(request, obj, form, change)
+
+    # def add_new_topic(self, request, add_topic):
+    #     print(add_topic)
+    #     self.model.objects.create(name=add_topic)
+    #     t = Topic.objects.filter(name=add_topic).first()
+    #     print(t)
+    #     self.message_user(request, 'Набор тестров успешно добавлен!')
+    #     return HttpResponseRedirect(f"/admin/quiz/topic/")
 
     def view_tests_link(self, obj):
         count = obj.quiz_set.count()
@@ -188,7 +221,6 @@ class OptionAdmin(admin.ModelAdmin):
             correct = True
         q = Question.objects.filter(id=add_question).first()
         add_option_ok = escape(add_option)
-        # add_option_ok = add_option
         self.model.objects.create(question=q, answer_text=add_option_ok, is_correct=correct)
         self.message_user(request, 'Ответ успешно добавлен!')
         return HttpResponseRedirect(f"/admin/quiz/option/?question__id={add_question}")
@@ -201,26 +233,22 @@ class OptionAdmin(admin.ModelAdmin):
             a_qs = Option.objects.filter(question=q).filter(is_correct=True)
             b_qs = Option.objects.filter(question=q)
             if len(a_qs) < len(b_qs):
-                self.message_user(request, 'Вопрос добавлен в тест - ответы успешно сохранены!')
+                self.message_user(request, 'Вопрос активирован - ответы успешно сохранены!')
                 q.accepted = True
                 q.save()
                 return HttpResponseRedirect(f"/admin/quiz/topic/{t.id}/change/")
-            if len(b_qs) == 1:
-                self.message_user(request, 'Вопрос не добавлен в тест - кол-во ответов должно быть больше 1!',
+            elif len(b_qs) == 1:
+                self.message_user(request, 'Вопрос не активирован - кол-во ответов должно быть больше 1!',
                                   messages.ERROR)
-                q.accepted = False
-                q.save()
-                return HttpResponseRedirect(f"/admin/quiz/option/?question__id={save_question}")
-            if len(a_qs) == len(b_qs):
-                self.message_user(request, 'Вопрос не добавлен в тест - хотя бы 1 ответ должен быть неправильным!',
+            elif len(a_qs) == len(b_qs):
+                self.message_user(request, 'Вопрос не активирован - хотя бы 1 ответ должен быть неправильным!',
                                   messages.ERROR)
-                q.accepted = False
-                q.save()
-                return HttpResponseRedirect(f"/admin/quiz/option/?question__id={save_question}")
+            q.accepted = False
+            q.save()
+            return HttpResponseRedirect(f"/admin/quiz/option/?question__id={save_question}")
         except Option.DoesNotExist:
-            self.message_user(request, 'Вопрос не добавлен в тест - должен быть хотя бы 1 правильный ответ!',
+            self.message_user(request, 'Вопрос не активирован - должен быть хотя бы 1 правильный ответ!',
                               messages.ERROR)
-            print('hey')
             q.accepted = False
             q.save()
             return HttpResponseRedirect(f"/admin/quiz/option/?question__id={save_question}")
@@ -229,21 +257,18 @@ class OptionAdmin(admin.ModelAdmin):
         q = Question.objects.filter(id=save_question).first()
         t = Topic.objects.filter(name=q.topic_name).first()
         if q.accepted == False:
-            self.message_user(request, 'Вопрос не добавлен в тест - для добавления необходимо нажать зеленую кнопку "Добавить вопрос в тест" на странице редактирования ответов!', messages.WARNING)
-            return HttpResponseRedirect(f"/admin/quiz/topic/{t.id}/change/")
+            self.message_user(request, 'Вопрос не активирован - для активации необходимо нажать зеленую кнопку'
+                                       ' "Активировать вопрос" на странице редактирования ответов!', messages.WARNING)
         else:
             try:
                 Option.objects.filter(question=q)[0:1].get()
                 self.save_options(request, save_question)
-                print('hey2')
-                return HttpResponseRedirect(f"/admin/quiz/topic/{t.id}/change/")  #хз - не понимаю почему еще просит
             except Option.DoesNotExist:
-                print('hey3')
                 q.accepted = False
                 q.save()
-                self.message_user(request, 'Вопрос убран из теста, так как не добавлены ответы!',
+                self.message_user(request, 'Вопрос деактивирован, так как не добавлены ответы!',
                                   messages.ERROR)
-                return HttpResponseRedirect(f"/admin/quiz/topic/{t.id}/change/")
+        return HttpResponseRedirect(f"/admin/quiz/topic/{t.id}/change/")
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
