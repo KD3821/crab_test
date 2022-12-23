@@ -1,5 +1,5 @@
 {% extends 'admin/change_list.html' %}
-{{ context_var|safe }}
+{{ context_var|safe }
 
 {% block object-tools %}
     <form id="add-option-form" method="POST">
@@ -11,7 +11,7 @@
             Тест: <b>{{question_quiz}}</b>
             <img src="/static/admin/img/tooltag-arrowright.svg" alt="для">
             вопрос активирован: <b>{{question_accepted}}</b></span><br><br>
-        <label>Добавить ОТВЕТ для вопроса: <b>{{ question_text }}</b><br>
+        <label>Добавить ОТВЕТ для вопроса: <span style="background-color: lightgrey; color: black; border: 1px solid lightgrey;"><b>{{ question_text }}</b></span><br><br>
         <input name="add-option" class="vTextField" size="50" required placeholder="Введите текст ответа"><br>(макс.кол-во: 50 символов)
         </label><br><br>
         <input type="checkbox" name="add_is_correct" id="new_is_correct" value="cor">
@@ -22,7 +22,7 @@
     <script>
         let addOptionForm = document.querySelector('#add-option-form')
         addOptionForm.querySelector('input[name="add-option"]').addEventListener('change', function(e){
-            let addOption = e.target.value
+            let addOption = String(e.target.value)
             let addQuestionArray = window.location.search.split('=')
             let addQuestion = addQuestionArray[1]
             addOptionForm.action = 'new/'+ addQuestion + '/' + addOption + '/'

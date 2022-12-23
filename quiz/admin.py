@@ -1,31 +1,15 @@
 from django.contrib import admin, messages
-from django.contrib.admin import SimpleListFilter
 from django.http import HttpResponseRedirect
 from .models import *
 from django.urls import reverse, path
 from django.utils.http import urlencode
 from django.utils.html import format_html
-from html import escape, unescape
+from html import escape
 from django.contrib.auth.models import Group
 
 
 admin.site.unregister(Group)
 
-# class QuizFilter(SimpleListFilter):
-#     title = 'Quiz Filter'
-#     parameter_name = 'topic'
-#
-#     def lookups(self, request, model_admin):
-#         return ('topic', 'quiz_name')
-#
-#     def queryset(self, request, queryset):
-#         print(self.value())
-#         if not self.value():
-#             return queryset
-#         if self.value() == 'topic_name':
-#             return queryset.filter(name=self.value())
-#         if self.value() == '-':
-#             return queryset.filter(topic=None)
 
 @admin.action(description='Отметить как ПРАВИЛЬНЫЙ ответ')
 def make_correct(modeladmin, request, queryset):
@@ -46,6 +30,7 @@ class QuestionInline(admin.StackedInline):
     fields = ['text', 'topic_name', 'quiz', 'accepted', 'option_text', 'admin_option_text', unbound_option_text, 'view_answers_href']
     readonly_fields = ['accepted', 'option_text', 'admin_option_text', unbound_option_text, 'view_answers_href']
     raw_id_fields = ['quiz']
+
     extra = 0
 
     def view_answers_href(self, obj):
@@ -58,7 +43,7 @@ class QuestionInline(admin.StackedInline):
                     + urlencode({"question__id": f"{obj.id}"})
             )
             return format_html('всего ответов: {} <br><a href="{}" class="addlink">'
-                               '<button type="button" class="button">Добавить | Редактировать ОТВЕТЫ</button></a>',
+                               '<button type="button" class="button">Добавить/редактировать ОТВЕТЫ &nbsp;| &nbsp;Активировать ВОПРОС</button></a>',
                                count, url)
         except Question.DoesNotExist:
             return format_html('Добавление | Редактирование ОТВЕТОВ возможно только после сохранения вопроса.'
@@ -87,8 +72,6 @@ class QuizInline(admin.StackedInline):
     extra = 0
 
 
-class OptionInline(admin.TabularInline):
-    model = Option
 
 
 @admin.register(Topic)
@@ -97,37 +80,25 @@ class TopicAdmin(admin.ModelAdmin):
 
     list_display = ['view_edit_test_link', 'view_tests_link']
     inlines = [QuizInline, QuestionInline]
-    # readonly_fields = ['name']
-    # list_filter = [QuizFilter]
+    exclude = ['trash_bin']
 
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('newtopic/<str:add_topic>/', self.save_model)
-        ]
-        return custom_urls + urls
+    # def get_urls(self):
+    #     urls = super().get_urls()
+    #     custom_urls = [
+    #         path('filter/<str:search_term>/', self.my_filter_test)
+    #     ]
+    #     return custom_urls + urls
+    #
+    # def my_filter_test(self, request, obj):
+    #     pass
 
-    # def save_model(self, request, obj, form, change):
-    #     print(self)
-    #     super().save_model(request, obj, form, change)
-
-    # def add_new_topic(self, request, add_topic):
-    #     print(add_topic)
-    #     self.model.objects.create(name=add_topic)
-    #     t = Topic.objects.filter(name=add_topic).first()
-    #     print(t)
-    #     self.message_user(request, 'Набор тестров успешно добавлен!')
-    #     return HttpResponseRedirect(f"/admin/quiz/topic/")
+    def _response_post_save(self, request, obj):
+        post_url = f'/admin/quiz/topic/{obj.id}/change/'
+        return HttpResponseRedirect(post_url)
 
     def view_tests_link(self, obj):
         count = obj.quiz_set.count()
-        url = (
-                reverse("admin:quiz_quiz_changelist")
-                + "?"
-                + urlencode({"topic__id": f"{obj.id}"})
-        )
-        return format_html('всего тестов: {} <a href="{}"><button type="button" class="button">См.список</button></a>',
-                           count, url)
+        return format_html('всего тестов: {} ', count)
 
     view_tests_link.short_description = "Тесты"
 
@@ -138,9 +109,39 @@ class TopicAdmin(admin.ModelAdmin):
 
     view_edit_test_link.short_description = "Набор тестов"
 
+    def delete_queryset(self, request, queryset):
+        if queryset[0].trash_bin == False:
+            try:
+                Topic.objects.filter(trash_bin=True)[0:1].get()
+            except Topic.DoesNotExist:
+                Topic.objects.create(name='No Name', trash_bin=True)
+            quiz_qs = Quiz.objects.filter(topic=queryset[0].id)
+            topic_qs = Topic.objects.filter(trash_bin=True).first()
+            quiz_qs.update(topic=topic_qs.id)
+            self.message_user(request, f'НАБОР "{queryset[0].name}" удален - при наличии ТЕСТОВ, '
+                                       f'они были перенесены в НАБОР "No Name" (выполняет функцию "Корзина")!',
+                              messages.WARNING)
+            queryset.delete()
+        else:
+            self.message_user(request, f'Невозможно удалить НАБОР "{queryset[0].name}", т.к. он выполняет функцию "Корзина"!',
+                              messages.ERROR)
+            self.message_user(request, f'Вы можете удалить ТЕСТЫ внутри НАБОРА "{queryset[0].name}", но не сам набор.',
+                              messages.WARNING)
+
+    def delete_model(self, request, obj):
+        queryset = Topic.objects.filter(name=obj.name)
+        self.delete_queryset(request, queryset)
+
+    def save_model(self, request, obj, form, change):
+        if obj.trash_bin == True:
+            obj.name = 'No Name'
+        obj.save()
+
 
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/quizes_change_list.html'
+
     list_display = ['name', 'topic', 'view_questions_link']
     list_filter = ['topic']
 
@@ -149,13 +150,7 @@ class QuizAdmin(admin.ModelAdmin):
 
     def view_questions_link(self, obj):
         count = obj.question_set.count()
-        url = (
-                reverse("admin:quiz_question_changelist")
-                + "?"
-                + urlencode({"quiz__id": f"{obj.id}"})
-        )
-        return format_html('всего вопросов: {} <a href="{}"><button type="button" class="button">'
-                           'См.список</button></a>', count, url)
+        return format_html('всего вопросов: {} ', count)
 
     view_questions_link.short_description = "Вопросы"
 
@@ -163,7 +158,6 @@ class QuizAdmin(admin.ModelAdmin):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ['text', 'accepted', 'quiz', 'view_answers_link']
-    list_filter = ['topic_name', 'quiz']
     exclude = ['topic_name']
     readonly_fields = ['accepted']
 
@@ -196,7 +190,6 @@ class OptionAdmin(admin.ModelAdmin):
     change_list_template = 'admin/options_change_list.html'
 
     list_display = ['answer_text', 'is_correct', 'question', 'question_id', 'topic_name', 'quiz_name']
-    # list_filter = ['topic_name', 'quiz_name']
     exclude = ['quiz_name', 'topic_name']
     actions = [make_correct, make_incorrect]
 

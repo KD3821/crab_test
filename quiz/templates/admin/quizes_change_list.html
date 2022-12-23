@@ -1,0 +1,19 @@
+{% extends 'admin/change_list.html' %}
+
+{% block object-tools %}
+    <span style="display: block; text-align: center; background-color: #f8f8f8; color: black; border: 1px solid lightgrey;">
+        <img src="/static/admin/img/search.svg" alt="поиск!">
+        Для удобного поиска ТЕСТА можно воспользоваться ФИЛЬТРОМ по НАБОРАМ тестов<br>
+        (Набор "No Name" включает в себя тесты из ранее удаленных НАБОРОВ - функция "Корзина")
+    </span><br>
+    <span style="display: block; text-align: center; background-color: #f8f8f8; color: darkred; border: 1px solid lightgrey;">
+        <img src="/static/admin/img/icon-alert.svg" alt="внимание!">
+        При назначении ВОПРОСУ ТЕСТА из другого НАБОРА - после сохранения ВОПРОС будет перемещен в другой НАБОР >> ТЕСТ
+    </span><br>
+{{ block.super }}
+
+{% endblock object-tools %}
+
+{% block object-tools-items %}
+{% endblock object-tools-items %}
+
