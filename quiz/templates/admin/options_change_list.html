@@ -12,7 +12,7 @@
             <img src="/static/admin/img/tooltag-arrowright.svg" alt="для">
             вопрос активирован: <b>{{question_accepted}}</b></span><br><br>
         <label>Добавить ОТВЕТ для вопроса: <span style="background-color: lightgrey; color: black; border: 1px solid lightgrey;"><b>{{ question_text }}</b></span><br><br>
-        <input name="add-option" class="vTextField" size="50" required placeholder="Введите текст ответа"><br>(макс.кол-во: 50 символов)
+        <input name="add-option" class="vTextField" size="50" required placeholder="Введите текст ответа" onkeyup="noSymbols(this)"><br>(макс.кол-во: 50 символов - кроме символов: ? / #)
         </label><br><br>
         <input type="checkbox" name="add_is_correct" id="new_is_correct" value="cor">
         <label class="vCheckboxLabel" for="new_is_correct">Правильный</label><br>
@@ -21,6 +21,10 @@
     <br>
     <script>
         let addOptionForm = document.querySelector('#add-option-form')
+        function noSymbols(input) {
+            let regex = /[?/#]/g;
+            input.value = input.value.replace(regex,"")
+        }
         addOptionForm.querySelector('input[name="add-option"]').addEventListener('change', function(e){
             let addOption = String(e.target.value)
             let addQuestionArray = window.location.search.split('=')
@@ -36,6 +40,7 @@
                 isCorrect = 'reg'
             }
             addOptionForm.action = addOptionForm.action + isCorrect + '/'
+            console.log(addOptionForm.action)
         })
     </script>
 {{ block.super }}
@@ -68,7 +73,7 @@
         let exitQuestion = exitQuestionArray[1]
         let exitOptionsForm = document.querySelector('#exit-options-form')
         exitOptionsForm.addEventListener('submit', function(){
-            exitOptionsForm.action = 'nosave/'+ saveQuestion + '/'
+            exitOptionsForm.action = 'nosave/'+ exitQuestion + '/'
         })
     </script>
 {% endblock %}

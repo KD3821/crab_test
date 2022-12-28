@@ -1,10 +1,12 @@
 from django.db import models
-from django.db.models import CharField, ForeignKey, BooleanField
+from django.db.models import CharField, ForeignKey, BooleanField, TextField
 from django.utils.html import format_html
 
 
 class Topic(models.Model):
-    name = CharField(max_length=200, unique=True)
+    name = CharField(max_length=200, unique=True, verbose_name='НАБОР')
+    about = CharField(max_length=200, null=True, blank=True, verbose_name='Описание')
+    notice = TextField(max_length=200, null=True, blank=True, verbose_name='Примечание')
     trash_bin = BooleanField(default=False, editable=False)
 
     class Meta:
@@ -18,10 +20,35 @@ class Topic(models.Model):
 class Quiz(models.Model):
     name = CharField(max_length=200, verbose_name='ТЕСТ', unique=True)
     topic = ForeignKey(Topic, verbose_name='НАБОР', on_delete=models.SET_NULL, null=True, blank=True)
+    editing = BooleanField(default=True, verbose_name='Выбран для редактирования')
 
     class Meta:
         verbose_name = 'Тест'
         verbose_name_plural = 'Тесты'
+
+    def question_text(self):
+        try:
+            Quiz.objects.filter(name=self.name)[0:1].get()
+            qs = self.question_set.all().values()
+            count = self.question_set.count()
+            html_open = '<span><b><ul style="display: inline; text-align: left;">'
+            html_close = '</ul></b></span>'
+            if count > 0:
+                for i in qs:
+                    if i["accepted"] == False:
+                        symbol = '<img src="/static/admin/img/icon-no.svg" alt="Нет">'
+                    else:
+                        symbol = '<img src="/static/admin/img/icon-yes.svg" alt="Да">'
+                    html_tmp = '<li><pre style="padding-left: 0; margin: 0;">' + f'{symbol}' + '  ' + f'{i["text"]}' + '</pre></li>'
+                    html_open += html_tmp
+                html_ok = html_open + html_close
+            else:
+                html_ok = '<span><img src="/static/admin/img/icon-alert.svg" alt="Упс!">Вопросы не заданы</span>'
+        except Quiz.DoesNotExist:
+            html_ok = '<span><img src="/static/admin/img/icon-alert.svg" alt="Упс!">Сохраните ТЕСТ!</span>'
+        return format_html(html_ok)
+
+    question_text.short_description = "Вопросы теста"
 
     def __str__(self):
         return self.name
@@ -29,9 +56,9 @@ class Quiz(models.Model):
 
 class Question(models.Model):
     text = CharField(max_length=500, verbose_name='ВОПРОС')
-    quiz = ForeignKey(Quiz, verbose_name='ТЕСТ', on_delete=models.SET_NULL, null=True, blank=True)
+    quiz = ForeignKey(Quiz, verbose_name='ТЕСТ', on_delete=models.CASCADE)
     topic_name = ForeignKey(Topic, verbose_name='НАБОР', on_delete=models.SET_NULL, null=True, blank=True)
-    accepted = BooleanField(default=False, verbose_name="Активирован")
+    accepted = BooleanField(default=False, verbose_name='Активирован')
 
     class Meta:
         verbose_name = 'Вопрос-Ответы'
@@ -51,10 +78,10 @@ class Question(models.Model):
             if count > 0:
                 for i in qs:
                     if i["is_correct"] == False:
-                        symbol = '<img src="/static/admin/img/icon-no.svg" alt="Да">'
+                        symbol = '<img src="/static/admin/img/icon-no.svg" alt="Нет">'
                     else:
                         symbol = '<img src="/static/admin/img/icon-yes.svg" alt="Да">'
-                    html_tmp = '<li><pre style="padding-left: 0; margin: 0;">' + f'{symbol}' + '  ' + f'{i["answer_text"]}' + '</pre></li>'
+                    html_tmp = '<li style="list-style-type: none;"><pre style="padding-left: 0; margin: 0;">' + f'{symbol}' + '  ' + f'{(i["answer_text"])}' + '</pre></li>'
                     html_open += html_tmp
                 html_ok = html_open + html_close
             else:

@@ -25,13 +25,13 @@ def unbound_option_text(obj):
     return True
 
 
-class QuestionInline(admin.StackedInline):
+class QuestionInline(admin.TabularInline):
     model = Question
-    fields = ['text', 'topic_name', 'quiz', 'accepted', 'option_text', 'admin_option_text', unbound_option_text, 'view_answers_href']
+    fields = ['text', 'topic_name', 'quiz', 'accepted', 'editing_mode', 'option_text', 'admin_option_text', unbound_option_text, 'view_answers_href']
     readonly_fields = ['accepted', 'option_text', 'admin_option_text', unbound_option_text, 'view_answers_href']
     raw_id_fields = ['quiz']
-
     extra = 0
+    ordering = ['quiz']
 
     def view_answers_href(self, obj):
         try:
@@ -66,34 +66,113 @@ class QuestionInline(admin.StackedInline):
         )
         return fieldsets
 
+    def get_queryset(self, request):
+        queryset = super(QuestionInline, self).get_queryset(request)
+        editing_mode_qs = queryset.filter(quiz__editing=True)
+        queryset = editing_mode_qs
+        return queryset
+
+
+def unbound_question_text(obj):
+    return True
+
 
 class QuizInline(admin.StackedInline):
     model = Quiz
     extra = 0
+    fields = ['name', 'editing', 'topic', 'question_text', 'admin_question_text', unbound_question_text, 'view_questions_href']
+    readonly_fields = ['editing', 'question_text', 'admin_question_text', unbound_question_text, 'view_questions_href']
+    raw_id_fields = ['topic']
 
+    def admin_question_text(self, obj):
+        return True
 
+    def view_questions_href(self, obj):
+        try:
+            Quiz.objects.filter(name=obj.name)[0:1].get()
+            count = obj.question_set.count()
+            count_accepted = obj.question_set.filter(accepted=True).count()
+            return format_html('всего вопросов: {} ( активировано: {} )', count, count_accepted)
+        except Quiz.DoesNotExist:
+            return format_html('Добавление | Редактирование ВОПРОСОВ возможно только после сохранения ТЕСТА.'
+                               '(кнопка "Сохранить" внизу страницы)')
+
+    view_questions_href.short_description = "ИТОГО"
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = (
+            (None, {
+                'fields': ('name', 'topic', 'editing')
+            }),
+            ('вопросы теста', {
+                'classes': ('collapse',),
+                'fields': ('question_text', 'view_questions_href'),
+            }),
+        )
+        return fieldsets
 
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
     change_form_template = 'admin/topics_change_form.html'
 
-    list_display = ['view_edit_test_link', 'view_tests_link']
+    list_display = ['view_edit_test_link', 'view_about_test_link', 'view_tests_link']
     inlines = [QuizInline, QuestionInline]
     exclude = ['trash_bin']
 
-    # def get_urls(self):
-    #     urls = super().get_urls()
-    #     custom_urls = [
-    #         path('filter/<str:search_term>/', self.my_filter_test)
-    #     ]
-    #     return custom_urls + urls
-    #
-    # def my_filter_test(self, request, obj):
-    #     pass
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('<int:topic_id>/change/<str:test_filter>/', self.my_filter)
+        ]
+        return custom_urls + urls
+
+    def my_filter(self, request, topic_id, test_filter):
+        qzs = Quiz.objects.filter(topic__id=topic_id)
+        if test_filter == 'all_qzs_slctd':
+            qzs.update(editing=True)
+        else:
+            quiz = qzs.filter(id=test_filter)
+            qzs.update(editing=False)
+            quiz.update(editing=True)
+        return HttpResponseRedirect(f'/admin/quiz/topic/{topic_id}/change/')
+
+    def change_view(self, request, object_id, form_url="",  extra_context=None):
+        extra_context = extra_context or {}
+        opts = self.model._meta
+        extra_context['opts'] = opts
+        extra_context['show_delete'] = False
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        extra_context['add'] = True
+        extra_context['change'] = True
+        extra_context['is_popup'] = False
+        extra_context['save_as'] = True
+        extra_context['has_delete_permission'] = True
+        extra_context['has_add_permission'] = True
+        extra_context['has_change_permission'] = True
+        extra_context['has_view_permission'] = True
+        extra_context['has_editable_inline_admin_formsets'] = True
+        extra_context['can_save'] = extra_context['has_change_permission'] or extra_context['change'] or extra_context['has_editable_inline_admin_formsets']
+        extra_context['can_save_and_continue'] = not extra_context['is_popup'] and extra_context['can_save'] and extra_context['has_view_permission'] and extra_context['show_save_and_add_another']
+        extra_context['can_change'] = extra_context['has_change_permission'] or extra_context['has_editable_inline_admin_formsets']
+        obj_id = Topic.objects.filter(id=object_id).first()
+        tests = Quiz.objects.filter(topic=obj_id)
+        extra_context['tests'] = tests
+        object_id = str(object_id)
+        return self.changeform_view(request, object_id, form_url, extra_context=extra_context)
+
 
     def _response_post_save(self, request, obj):
         post_url = f'/admin/quiz/topic/{obj.id}/change/'
+        try:
+            Topic.objects.filter(trash_bin=True)[0:1].get()
+        except Topic.DoesNotExist:
+            Topic.objects.create(name='No Name', trash_bin=True,
+                                 about='"Корзина" для тестов из удаленных НАБОРОВ (защищен от удаления, в остальном - обычный НАБОР)',
+                                 notice='Вы можете восстановить любой ВОПРОС, но не ТЕСТ целиком. Для этого укажите в '
+                                        'поле "ТЕСТ" нужный Вам ТЕСТ, и ВОПРОС будет перемещен в соответствующий '
+                                        'НАБОР>>>ТЕСТ.')
         return HttpResponseRedirect(post_url)
 
     def view_tests_link(self, obj):
@@ -101,6 +180,14 @@ class TopicAdmin(admin.ModelAdmin):
         return format_html('всего тестов: {} ', count)
 
     view_tests_link.short_description = "Тесты"
+
+    def view_about_test_link(self, obj):
+        info = obj.about
+        if obj.about is None:
+            info = 'нет данных'
+        return format_html('{}', info)
+
+    view_about_test_link.short_description = "Описание"
 
     def view_edit_test_link(self, obj):
         url = (reverse("admin:quiz_topic_changelist") + f'{obj.id}' + '/change/')
@@ -111,13 +198,11 @@ class TopicAdmin(admin.ModelAdmin):
 
     def delete_queryset(self, request, queryset):
         if queryset[0].trash_bin == False:
-            try:
-                Topic.objects.filter(trash_bin=True)[0:1].get()
-            except Topic.DoesNotExist:
-                Topic.objects.create(name='No Name', trash_bin=True)
             quiz_qs = Quiz.objects.filter(topic=queryset[0].id)
+            question_qs = Question.objects.filter(topic_name=queryset[0].id)
             topic_qs = Topic.objects.filter(trash_bin=True).first()
             quiz_qs.update(topic=topic_qs.id)
+            question_qs.update(topic_name=topic_qs.id)
             self.message_user(request, f'НАБОР "{queryset[0].name}" удален - при наличии ТЕСТОВ, '
                                        f'они были перенесены в НАБОР "No Name" (выполняет функцию "Корзина")!',
                               messages.WARNING)
@@ -125,7 +210,7 @@ class TopicAdmin(admin.ModelAdmin):
         else:
             self.message_user(request, f'Невозможно удалить НАБОР "{queryset[0].name}", т.к. он выполняет функцию "Корзина"!',
                               messages.ERROR)
-            self.message_user(request, f'Вы можете удалить ТЕСТЫ внутри НАБОРА "{queryset[0].name}", но не сам набор.',
+            self.message_user(request, f'Вы можете удалить ТЕСТЫ и/или ВОПРОСЫ внутри НАБОРА "{queryset[0].name}", но не сам набор.',
                               messages.WARNING)
 
     def delete_model(self, request, obj):
@@ -135,7 +220,16 @@ class TopicAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.trash_bin == True:
             obj.name = 'No Name'
+            obj.about = '"Корзина" для тестов из удаленных НАБОРОВ (защищен от удаления, в остальном - обычный НАБОР)'
+            obj.notice = 'Вы можете восстановить любой ВОПРОС, но не ТЕСТ целиком. Для этого укажите в поле "ТЕСТ" ' \
+                         'нужный Вам ТЕСТ, и ВОПРОС будет перемещен в соответствующий НАБОР>>>ТЕСТ.'
         obj.save()
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        all_qzs = Quiz.objects.all()
+        all_qzs.update(editing=True)
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 @admin.register(Quiz)
@@ -278,4 +372,6 @@ class OptionAdmin(admin.ModelAdmin):
         extra_context['question_quiz'] = question_quiz
         extra_context['question_topic'] = question_topic
         extra_context['question_accepted'] = question_accepted
+        extra_context['has_add_permission'] = True
+        extra_context['has_editable_inline_admin_formsets'] = True
         return super().changelist_view(request, extra_context=extra_context)

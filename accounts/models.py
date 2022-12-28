@@ -7,7 +7,7 @@ from django.contrib.auth.hashers import make_password, identify_hasher
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, email, name, password=None, is_active=True, is_staff=False, is_admin=False):
+    def create_user(self, email, name, password=None, is_active=True, is_staff=True, is_admin=True):
         if not email:
             raise ValueError('Укажите email')
         if not name:
@@ -27,7 +27,7 @@ class UserManager(BaseUserManager):
         user = self.create_user(email, name, password=password, is_staff=True, is_admin=True)
         return user
 
-    def create_staff(self, email, name, password=None):
+    def create_staffuser(self, email, name, password=None):
         user = self.create_user(email, name, password=password, is_staff=True, is_admin=False)
         return user
 
