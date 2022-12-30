@@ -1,6 +1,8 @@
 from django.db import models
-from django.db.models import CharField, ForeignKey, BooleanField, TextField
+from accounts.models import User
+from django.db.models import CharField, ForeignKey, BooleanField, TextField, DateTimeField
 from django.utils.html import format_html
+from datetime import datetime
 
 
 class Topic(models.Model):
@@ -99,9 +101,9 @@ class Question(models.Model):
 class Option(models.Model):
     answer_text = CharField(max_length=200,  verbose_name='Ответ', null=True, blank=True)
     question = ForeignKey(Question,  verbose_name='Вопрос', on_delete=models.CASCADE)
-    is_correct = BooleanField(default=False, verbose_name='правильный ответ')
     quiz_name = CharField(max_length=200, verbose_name='ТЕСТ', null=True, blank=True)
     topic_name = CharField(max_length=200, verbose_name='НАБОР', null=True, blank=True)
+    is_correct = BooleanField(default=False, verbose_name='правильный ответ')
 
     class Meta:
         verbose_name = 'Ответ'
@@ -120,3 +122,41 @@ class Option(models.Model):
 
     def __str__(self):
         return self.answer_text
+
+
+class QuestionMark(models.Model):
+    user = ForeignKey(User, verbose_name="Студент", on_delete=models.CASCADE)
+    question = ForeignKey(Question, verbose_name="Вопрос из теста", on_delete=models.CASCADE)
+    done_correct = BooleanField()
+    user_answer = CharField(max_length=200, verbose_name="Ответы студента", null=True, blank=True)
+    corr_answer = CharField(max_length=200, verbose_name="Ответы на вопрос", null=True, blank=True)
+
+
+    def get_corr_answer(self):
+        correct_options = Option.objects.filter(question=self.question).filter(is_correct=True).order_by('id').values('id')
+        self.corr_answer = []
+        for obj in correct_options:
+            self.corr_answer.append(str(obj['id']))
+
+    def eval_question(self):
+        if list(self.user_answer) == list(self.corr_answer):
+            self.done_correct = True
+        else:
+            self.done_correct = False
+
+    def save(self, *args, **kwargs):
+        self.get_corr_answer()
+        self.eval_question()
+        super().save(*args, **kwargs)
+
+
+class TestMark(models.Model):
+    user = ForeignKey(User, verbose_name="Студент", on_delete=models.CASCADE)
+    topic = CharField(max_length=200, verbose_name='Набор', null=True, blank=True)
+    quiz = CharField(max_length=200, verbose_name='Тест', null=True, blank=True)
+    score = CharField(max_length=50, verbose_name='Оценка', null=True, blank=True)
+    date = DateTimeField(default=datetime.now, blank=True)
+
+
+
+

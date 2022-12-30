@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Вопрос{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        <h3>Тест "{{ test }}":</h3>
+        <table class="table">
+             <thead>
+                <th>{{question}}</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <form id="question_form" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="q_id" value="{{q_id}}">
+                            {% for obj in options %}
+                            <input type="checkbox" name="answers" id="{{ obj.id }}" value="{{ obj.id }}">
+                            <label class="vCheckboxLabel" for="{{ obj.id }}">{{ obj.answer_text }}</label><br>
+                            {% endfor %}
+                            <button class="button" type="submit">Принять ответ</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Результаты</a>
+    </div>
+</div>
+{% endblock %}

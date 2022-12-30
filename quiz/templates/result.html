@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Результат теста{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        <h3> Тест "{{ test }}":</h3>
+        <table class="table">
+             <thead>
+                <th>Вопрос:</th>
+                <th>Ответ студента:</th>
+                <th>Правильный ответ:</th>
+                <th>Ответ засчитан:</th>
+            </thead>
+            <tbody>
+                {% for obj in marks %}
+                <tr>
+                    <td>{{ obj.question }}</td>
+                    <td>{{ obj.user_answer }}</td>
+                    <td>{{ obj.corr_answer }}</td>
+                    <td>
+                        {% if obj.done_correct %}
+                            <img src="/static/admin/img/icon-yes.svg" alt="Правильно">
+                        {% else %}
+                            <img src="/static/admin/img/icon-no.svg" alt="Неправильно">
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <table cellpadding="5" style="border: 1px solid black;">
+            <thead align="center">
+                <tr colspan="3">Итоговый результат по тесту {{ test }} от <b>{{ date }}<b></b></tr>
+                <tr>
+                    <th style="border: 1px solid black;">правильных ответов</th>
+                    <th style="border: 1px solid black;">неправильных ответов</th>
+                    <th style="border: 1px solid black;">результат в %</th>
+                </tr>
+            </thead>
+            <tbody align="center">
+                <tr>
+                    <td style="border: 1px solid black;">{{ correct }}</td>
+                    <td style="border: 1px solid black;">{{ wrong }}</td>
+                    <td style="border: 1px solid black;">{{ score }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Результаты</a>
+    </div>
+</div>
+{% endblock %}

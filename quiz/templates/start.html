@@ -7,18 +7,27 @@
     <div class="col-md-10 mx-auto mb-3">
         <h3>Все темы тестирования:</h3>
         <table class="table">
+             <thead>
+                <th>Набор тестов</th>
+                <th>Описание</th>
+                <th>Примечание</th>
+                <th></th>
+            </thead>
             <tbody>
                 {% for obj in topics %}
                 <tr>
                     <td><a href="#" role="button" class="btn btn-success">{{obj.name}}</a></td>
-                    <td><a href="{% url 'accounts:all_users' %}" role="button" class="btn btn-info">Кнопка</a></td>
+                    <td>{{obj.about}}</td>
+                    <td>{{obj.notice}}</td>
+                    <td><a href="{% url 'quiz:tests' obj.id %}" role="button" class="btn btn-info">Список тестов</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     <div class="col-md-8 mx-auto">
-        <a href="{% url 'accounts:all_users' %}"role="button" class="btn btn-info" >Кнопка</a>
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}

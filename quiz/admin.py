@@ -10,6 +10,15 @@ from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
 
+@admin.register(QuestionMark)
+class QuestionMarkAdmin(admin.ModelAdmin):
+    list_display = ['question', 'user', 'done_correct', 'user_answer', 'corr_answer']
+
+
+@admin.register(TestMark)
+class TestMarkAdmin(admin.ModelAdmin):
+    list_display = ['user', 'topic', 'quiz', 'score', 'date']
+
 
 @admin.action(description='Отметить как ПРАВИЛЬНЫЙ ответ')
 def make_correct(modeladmin, request, queryset):

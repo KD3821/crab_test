@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Выберите тест{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        <h3> Тест "{{ topic }}":</h3>
+        <table class="table">
+             <thead>
+                <th>Тест</th>
+                <th></th>
+            </thead>
+            <tbody>
+                {% for obj in tests %}
+                <tr>
+                    <td>{{obj.name}}</a></td>
+                    <td><a href="{% url 'quiz:start_test' topic.id obj.id %}" role="button" class="btn btn-info">Начать тест</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Результаты</a>
+    </div>
+</div>
+{% endblock %}
