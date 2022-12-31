@@ -1,25 +1,27 @@
 {% extends 'base.html' %}
 
-{% block title %}Выберите тему для тестирования{% endblock %}
+{% block title %}Ошибка обработки результата теста{% endblock %}
 
 {% block content %}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ topic_obj }}</li>
+  </ol>
+</nav>
 <div class="row">
+    <div style="color: red; text-align: center;">Ой!<br>Что-то пошло не так с обработкой результатов тестирования:<br>необходимо пройти тест еще раз!</div>
     <div class="col-md-10 mx-auto mb-3">
-        <h3>Все темы тестирования:</h3>
         <table class="table">
              <thead>
-                <th>Набор тестов</th>
-                <th>Описание</th>
-                <th>Примечание</th>
+                <th>Тест из набора "{{ topic_obj }}"</th>
                 <th></th>
             </thead>
             <tbody>
-                {% for obj in topics %}
+                {% for obj in tests %}
                 <tr>
-                    <td><b>{{obj.name}}</b></td>
-                    <td>{{obj.about}}</td>
-                    <td>{{obj.notice}}</td>
-                    <td><a href="{% url 'quiz:tests' obj.id %}" role="button" class="btn btn-info">Список тестов</a></td>
+                    <td>{{obj.name}}</a></td>
+                    <td><a href="{% url 'quiz:reset_start_test' topic obj.id %}" role="button" class="btn btn-info">Начать тест</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -27,7 +29,7 @@
     </div>
     <div class="col-md-8 mx-auto">
         <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
-        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Результаты</a>
+        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}

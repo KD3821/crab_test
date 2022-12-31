@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Результаты тестов{% endblock %}
+
+{% block content %}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
+    <li class="breadcrumb-item active" aria-current="page">История всех наборов тестов</li>
+  </ol>
+</nav>
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        <h4>Все тесты:</h4>
+        <table class="table">
+             <thead>
+                <th>Набор:</th>
+                <th>Тест:</th>
+                <th>Оценка:</th>
+                <th colspan="3">Дата:</th>
+            </thead>
+            <tbody>
+                {% for obj in attempts %}
+                <tr>
+                    <td>{{ obj.topic }}</td>
+                    <td>{{ obj.quiz }}</td>
+                    <td>{{ obj.score }}</td>
+                    <td>{{ obj.date }}</td>
+                    <td>
+                        <button class="btn btn-warning" type="submit">Смотреть ошибки</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" type="submit">Пройти еще раз</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
+        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
+    </div>
+</div>
+{% endblock %}

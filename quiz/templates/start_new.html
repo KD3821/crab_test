@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Выберите тему для тестирования{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        <h4>Наборы тестов:</h4>
+        <div class="row">
+            {% for obj in topics %}
+            <div class="card" style="width: 18rem;">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">{{ obj.name }}</h5>
+                    <p class="card-text">{{ obj.about }}</p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for i in obj.quiz_set.all %}
+                    <li class="list-group-item">{{ i }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="card-body">
+                    <a href="{% url 'quiz:history_tests' obj.id %}" class="btn btn-outline-secondary">История</a>
+                    <a href="{% url 'quiz:tests' obj.id %}" class="btn btn-outline-primary">Список тестов</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
+        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
+    </div>
+</div>
+{% endblock %}

@@ -12,12 +12,22 @@ admin.site.unregister(Group)
 
 @admin.register(QuestionMark)
 class QuestionMarkAdmin(admin.ModelAdmin):
-    list_display = ['question', 'user', 'done_correct', 'user_answer', 'corr_answer']
+    list_display = ['question', 'user', 'get_test_name', 'done_correct', 'user_answer', 'corr_answer']
+
+    def get_test_name(self, obj):
+        q = Question.objects.filter(id=obj.question.id).first()
+        test = Quiz.objects.filter(id=q.quiz.id).first()
+        return test
 
 
 @admin.register(TestMark)
 class TestMarkAdmin(admin.ModelAdmin):
     list_display = ['user', 'topic', 'quiz', 'score', 'date']
+
+
+@admin.register(ErrorObject)
+class ErrorObjectAdmin(admin.ModelAdmin):
+    list_display = ['question', 'user', 'test_mark', 'test_date', 'wrong_answers']
 
 
 @admin.action(description='Отметить как ПРАВИЛЬНЫЙ ответ')

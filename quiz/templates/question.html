@@ -3,6 +3,13 @@
 {% block title %}Вопрос{% endblock %}
 
 {% block content %}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'quiz:tests' topic %}">Набор: {{ topic_obj }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Тест: "{{ test }}"</li>
+    </ol>
+</nav>
 <div class="row">
     <div class="col-md-10 mx-auto mb-3">
         <h3>Тест "{{ test }}":</h3>
@@ -29,7 +36,7 @@
     </div>
     <div class="col-md-8 mx-auto">
         <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
-        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Результаты</a>
+        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}

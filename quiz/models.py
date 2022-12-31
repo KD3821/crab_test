@@ -130,6 +130,7 @@ class QuestionMark(models.Model):
     done_correct = BooleanField()
     user_answer = CharField(max_length=200, verbose_name="Ответы студента", null=True, blank=True)
     corr_answer = CharField(max_length=200, verbose_name="Ответы на вопрос", null=True, blank=True)
+    processed = BooleanField(default=False)
 
 
     def get_corr_answer(self):
@@ -158,5 +159,14 @@ class TestMark(models.Model):
     date = DateTimeField(default=datetime.now, blank=True)
 
 
+class ErrorObject(models.Model):
+    user = ForeignKey(User, verbose_name="Студент", on_delete=models.CASCADE)
+    question = ForeignKey(Question, verbose_name="Вопрос", on_delete=models.CASCADE)
+    test_mark = ForeignKey(TestMark, verbose_name="Результат теста", on_delete=models.CASCADE)
+    test_date = DateTimeField(blank=True)
+    wrong_answers = CharField(max_length=200, verbose_name='Неправильно', null=True, blank=True)
 
-
+    # def save(self, *args, **kwargs):
+    #     qstn_mark = QuestionMark.objects.filter(question=self.question).filter(user=self.user).first()
+    #     self.wrong_answers = qstn_mark.user_answer
+    #     super().save(*args, **kwargs)

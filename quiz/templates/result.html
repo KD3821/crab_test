@@ -31,16 +31,23 @@
             </tbody>
         </table>
         <br>
-        <table cellpadding="5" style="border: 1px solid black;">
-            <thead align="center">
-                <tr colspan="3">Итоговый результат по тесту {{ test }} от <b>{{ date }}<b></b></tr>
-                <tr>
-                    <th style="border: 1px solid black;">правильных ответов</th>
-                    <th style="border: 1px solid black;">неправильных ответов</th>
-                    <th style="border: 1px solid black;">результат в %</th>
-                </tr>
+        <table align="center" cellpadding="5" style="border: 1px solid black;">
+            <thead>
+                <th colspan="4" align="right">Итоговый результат по тесту "{{ test }}" от <b>{{ date }}</b></th>
             </thead>
-            <tbody align="center">
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid black;">правильных ответов</td>
+                    <td style="border: 1px solid black;">неправильных ответов</td>
+                    <td style="border: 1px solid black;">результат в %</td>
+                    <td rowspan="2" style="border: 1px solid black;">
+                        <form id="reset_res_form" method="POST">
+                            <input type="hidden" name="t_id" value="{{test.id}}">
+                            <button class="btn btn-danger" type="submit">Сбросить результат<br>и пройти еще раз</button>
+                        </form>
+                    </td>
+                </tr>
+                </tr>
                 <tr>
                     <td style="border: 1px solid black;">{{ correct }}</td>
                     <td style="border: 1px solid black;">{{ wrong }}</td>
@@ -51,7 +58,7 @@
     </div>
     <div class="col-md-8 mx-auto">
         <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
-        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Результаты</a>
+        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}
