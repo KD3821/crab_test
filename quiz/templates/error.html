@@ -16,7 +16,7 @@
             <tbody>
                 {% for obj in topics %}
                 <tr>
-                    <td><a href="#" role="button" class="btn btn-success">{{obj.name}}</a></td>
+                    <td><b>{{obj.name}}</b></td>
                     <td>{{obj.about}}</td>
                     <td>{{obj.notice}}</td>
                     <td><a href="{% url 'quiz:tests' obj.id %}" role="button" class="btn btn-info">Список тестов</a></td>
