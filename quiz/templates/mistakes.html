@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Ошибки теста{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        <h3> Тест "{{ test }}" от {{ mark.date }}:</h3>
+        <table class="table">
+             <thead>
+                <th>Вопрос:</th>
+                <th>Ответ студента:</th>
+                <th>Правильный ответ:</th>
+                <th>Ответ засчитан:</th>
+            </thead>
+            <tbody>
+                {% for key,value in errors_dict.items %}
+                <tr>
+                    <td>{{ key.question }}</td>
+                    <td>{% for ans in value.err %}
+                            {{ ans }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for opt in value.cor %}
+                            {{ opt }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <img src="/static/admin/img/icon-no.svg" alt="Неправильно">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <table align="center" cellpadding="5" style="border: 1px solid black;">
+            <thead>
+                <th colspan="4" align="right">Итоговый результат по тесту "{{ test }}" от <b>{{ mark.date }}</b></th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid black;">правильных ответов</td>
+                    <td style="border: 1px solid black;">неправильных ответов</td>
+                    <td style="border: 1px solid black;">результат в %</td>
+                    <td rowspan="2" style="border: 1px solid black;">
+                        <form id="reset_res_form" method="POST">
+                            <input type="hidden" name="t_id" value="{{test.id}}">
+                            <button class="btn btn-danger" type="submit">Сбросить результат<br>и пройти еще раз</button>
+                        </form>
+                    </td>
+                </tr>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid black;">{{ cor_count }}</td>
+                    <td style="border: 1px solid black;">{{ err_count }}</td>
+                    <td style="border: 1px solid black;">{{ mark.score }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
+        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
+    </div>
+</div>
+{% endblock %}

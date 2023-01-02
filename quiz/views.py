@@ -2,16 +2,15 @@ from django.shortcuts import render, HttpResponseRedirect
 from django.urls import reverse
 from django.views import View
 from .models import *
-from html import unescape
+from html import unescape, escape
 
 
 def del_q_marks(request, topic, test):
     user = request.user
-    test_id = test
-    test = Quiz.objects.filter(id=test).first()
-    q_marks = QuestionMark.objects.filter(user=user).filter(question__quiz__name=test)
+    test_obj = Quiz.objects.filter(id=test).first()
+    q_marks = QuestionMark.objects.filter(user=user).filter(question__quiz__name=test_obj)
     q_marks.delete()
-    return HttpResponseRedirect(reverse('quiz:start_test', args=[topic, test_id]))
+    return HttpResponseRedirect(reverse('quiz:start_test', args=[topic, test]))
 
 
 class StartView(View):
@@ -55,7 +54,7 @@ class StartTestView(View):
         q_id = request.POST['q_id']
         question = Question.objects.filter(id=q_id).first()
         user_answer = request.POST.getlist('answers')
-        mark = QuestionMark.objects.create(user=user, question=question, done_correct=False, user_answer=user_answer)
+        QuestionMark.objects.create(user=user, question=question, done_correct=False, user_answer=user_answer)
         return HttpResponseRedirect(reverse('quiz:start_test', args=[topic, test_id]))
 
 
@@ -88,6 +87,39 @@ class ResultTestView(View):
             tests = Quiz.objects.filter(id=test)
             return render(request, 'error.html', {'topic': topic, 'topic_obj': topic_obj, 'tests': tests})
 
+
+def view_errors(request, test_mark):
+    user = request.user
+    mark = TestMark.objects.filter(id=test_mark).first()
+    topic_name = mark.topic
+    topic_obj = Topic.objects.filter(name=topic_name).first()
+    test_obj = mark.quiz
+    test = Quiz.objects.filter(name=test_obj).first()
+    tests = Quiz.objects.filter(topic=topic_obj)
+    try:
+        ErrorObject.objects.filter(user=user).filter(test_mark=test_mark)[0:1].get()
+        errors = ErrorObject.objects.filter(user=user).filter(test_mark=test_mark)
+        errors_dict = {}
+        for e in errors:
+            compare_dict = {}
+            cor_qs = e.question.option_set.filter(is_correct=True)
+            for i in cor_qs:
+                i.answer_text = unescape(i.answer_text)
+            tmp_e_list = e.wrong_answers
+            e_list = tmp_e_list.strip("['']").split(",")
+            err_qs = Option.objects.filter(id__in=e_list)
+            for i in err_qs:
+                i.answer_text = unescape(i.answer_text)
+            compare_dict['cor'] = cor_qs
+            compare_dict['err'] = err_qs
+            errors_dict[e] = compare_dict
+        total_q_count = test.question_set.count()
+        err_q_count = errors.count()
+        cor_q_count = total_q_count - err_q_count
+        return render(request, 'mistakes.html', {'topic': topic_obj, 'test': test_obj, 'mark': mark, 'errors': errors,
+                                                 'errors_dict': errors_dict, 'cor_count': cor_q_count, 'err_count': err_q_count})
+    except ErrorObject.DoesNotExist:
+        return render(request, 'error.html', {'topic': topic_obj.id, 'topic_obj': topic_obj, 'tests': tests})
 
 
 class HistoryTopicView(View):

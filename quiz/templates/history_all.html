@@ -27,10 +27,14 @@
                     <td>{{ obj.score }}</td>
                     <td>{{ obj.date }}</td>
                     <td>
-                        <button class="btn btn-warning" type="submit">Смотреть ошибки</button>
+                        {% if obj.score == "100.0%" %}
+                            <span style="color: darkgreen">Нет ошибок</span>
+                        {% else %}
+                            <a href="{% url 'quiz:test_errors' obj.id %}"role="button" class="btn btn-warning">Ошибки</a>
+                        {% endif %}
                     </td>
                     <td>
-                        <button class="btn btn-danger" type="submit">Пройти еще раз</button>
+                        <a href="#" role="button" class="btn btn-info">Пройти еще раз</a>
                     </td>
                 </tr>
                 {% endfor %}
