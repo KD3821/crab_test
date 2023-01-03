@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import StartView, TestsView, StartTestView, ResultTestView, HistoryTopicView, HistoryAllTopicView, del_q_marks, view_errors
+from .views import StartView, TestsView, StartTestView, ResultTestView, HistoryTopicView, HistoryAllTopicView, del_q_marks, view_errors, search_tests
 urlpatterns = [
     path('topics/', StartView.as_view(), name='all_topics'),
     path('topics/<int:topic>/', TestsView.as_view(), name='tests'),
@@ -8,5 +8,6 @@ urlpatterns = [
     path('topics/<int:topic>/test/<int:test>/again/', del_q_marks, name='reset_start_test'),
     path('topics/<int:topic>/hist/', HistoryTopicView.as_view(), name='history_tests'),
     path('topics/allhist/', HistoryAllTopicView.as_view(), name='history_topics'),
-    path('topics/err/<int:test_mark>/', view_errors, name='test_errors')
+    path('topics/err/<int:test_mark>/', view_errors, name='test_errors'),
+    path('topics/search/', search_tests, name="search")
 ]

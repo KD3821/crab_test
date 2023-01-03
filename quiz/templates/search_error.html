@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Найти тест{% endblock %}
+
+{% block content %}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Результаты поиска</li>
+  </ol>
+</nav>
+<div class="row">
+    <div style="color: red; text-align: center;">Ой!<br>Что-то пошло не так с обработкой результатов поиска:<br>Пожалуйста, повторите поиск!<br>=)</div>
+</div>
+{% endblock %}

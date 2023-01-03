@@ -173,3 +173,18 @@ class HistoryAllTopicView(LoginRequiredMixin, View):
             quiz_id_info[quiz.name] = quiz.id
         return render(request, 'history_all.html', {'attempts': qs, 'topic_id_info': topic_id_info, 'quiz_id_info': quiz_id_info})
 
+
+def search_tests(request):
+    if request.method == "POST":
+        searched = request.POST['searched']
+        search_result = Quiz.objects.filter(name__contains=searched).order_by('topic')
+        if search_result.count() == 0:
+            search_result = Quiz.objects.all().order_by('topic')
+            reply = " тестов не найдено: приводим полный список тестов"
+        else:
+            reply = " найдено тестов: " + str(search_result.count())
+        return render(request, 'search_tests.html', {'searched': searched, 'search_result': search_result, 'reply': reply})
+    else:
+        return render(request, 'search_error.html', {})
+
+

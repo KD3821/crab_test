@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Найти тест{% endblock %}
+
+{% block content %}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Результаты поиска</li>
+  </ol>
+</nav>
+<div class="row">
+    <div class="col-md-10 mx-auto mb-3">
+        {% if searched %}
+            <h4>По запросу "{{ searched }}" {{ reply }}</h4>
+            <table class="table">
+                <thead>
+                    <th>Название теста:</th>
+                    <th colspan="2">Из набора тестов:</th>
+                </thead>
+                <tbody>
+                    {% for obj in search_result %}
+                        <tr>
+                            <td>{{ obj.name }}</td>
+                            <td>{{ obj.topic }}</td>
+                            <td><a href="{% url 'quiz:reset_start_test' obj.topic.id obj.id %}" role="button" class="btn btn-info">Начать тест</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <h4>Нет подходящих результатов, приводим полный список тестов:</h4>
+            <table class="table">
+                <thead>
+                    <th>Название теста:</th>
+                    <th colspan="2">Из набора тестов:</th>
+                </thead>
+                <tbody>
+                    {% for obj in search_result %}
+                        <tr>
+                            <td>{{ obj.name }}</td>
+                            <td>{{ obj.topic }}</td>
+                            <td><a href="{% url 'quiz:reset_start_test' obj.topic.id obj.id %}" role="button" class="btn btn-info">Начать тест</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

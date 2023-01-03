@@ -17,8 +17,9 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-                        <form class="d-flex">
-                            <input class="form-control me-2" type="search" placeholder="Поиск" aria-label="Search">
+                        <form class="d-flex" method="POST" action="{% url 'quiz:search' %}">
+                            {% csrf_token %}
+                            <input class="form-control me-2" type="search" placeholder="Поиск теста" aria-label="Search" name="searched" required>
                             <button class="btn btn-outline-secondary" type="submit">Найти</button>
                         </form>
                         <ul class="navbar-nav mr-auto">
