@@ -3,6 +3,7 @@ from accounts.models import User
 from django.db.models import CharField, ForeignKey, BooleanField, TextField, DateTimeField
 from django.utils.html import format_html
 from datetime import datetime
+from django.utils import timezone
 
 
 class Topic(models.Model):
@@ -135,6 +136,7 @@ class QuestionMark(models.Model):
 
     def get_corr_answer(self):
         correct_options = Option.objects.filter(question=self.question).filter(is_correct=True).order_by('id').values('id')
+        # correct_options = Option.objects.filter(question=self.question).filter(is_correct=True).order_by('id').values('id', 'answer_text')
         self.corr_answer = []
         for obj in correct_options:
             self.corr_answer.append(str(obj['id']))
@@ -156,7 +158,8 @@ class TestMark(models.Model):
     topic = CharField(max_length=200, verbose_name='Набор', null=True, blank=True)
     quiz = CharField(max_length=200, verbose_name='Тест', null=True, blank=True)
     score = CharField(max_length=50, verbose_name='Оценка', null=True, blank=True)
-    date = DateTimeField(default=datetime.now, blank=True)
+    # date = DateTimeField(default=datetime.now, blank=True)
+    date = DateTimeField(default=timezone.now, blank=True)
 
 
 class ErrorObject(models.Model):

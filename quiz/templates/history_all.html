@@ -30,21 +30,24 @@
                         {% if obj.score == "100.0%" %}
                             <span style="color: darkgreen">Нет ошибок</span>
                         {% else %}
-                            <a href="{% url 'quiz:test_errors' obj.id %}"role="button" class="btn btn-warning">Ошибки</a>
+                            <a href="{% url 'quiz:test_errors' obj.id %}" role="button" class="btn btn-warning">Ошибки</a>
                         {% endif %}
                     </td>
                     <td>
-                        <a href="#" role="button" class="btn btn-info">Пройти еще раз</a>
+                       {% for q_key,q_value in quiz_id_info.items %}
+                            {% if q_key == obj.quiz %}
+                                {% for t_key,t_value in topic_id_info.items %}
+                                    {% if t_key == obj.topic %}
+                                        <a href="{% url 'quiz:reset_start_test' t_value q_value %}" role="button" class="btn btn-info">Пройти тест</a>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <br>
-    </div>
-    <div class="col-md-8 mx-auto">
-        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
-        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}

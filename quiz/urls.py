@@ -8,6 +8,5 @@ urlpatterns = [
     path('topics/<int:topic>/test/<int:test>/again/', del_q_marks, name='reset_start_test'),
     path('topics/<int:topic>/hist/', HistoryTopicView.as_view(), name='history_tests'),
     path('topics/allhist/', HistoryAllTopicView.as_view(), name='history_topics'),
-    # path('topics/<int:topic>/test/<int:test>/res/<int:mark>/', view_errors, name='test_errors'),
     path('topics/err/<int:test_mark>/', view_errors, name='test_errors')
 ]

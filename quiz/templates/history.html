@@ -6,17 +6,17 @@
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
-    <li class="breadcrumb-item active" aria-current="page">История набора тестов "{{ topic }}"</li>
+    <li class="breadcrumb-item active" aria-current="page">История набора тестов "{{ topic_obj }}"</li>
   </ol>
 </nav>
 <div class="row">
     <div class="col-md-10 mx-auto mb-3">
-        <h4> Набор тестов "{{ topic }}":</h4>
+        <h4> Набор тестов "{{ topic_obj }}":</h4>
         <table class="table">
              <thead>
                 <th>Тест:</th>
                 <th>Оценка:</th>
-                <th colspan="2">Дата:</th>
+                <th colspan="3">Дата:</th>
             </thead>
             <tbody>
                 {% for obj in attempts %}
@@ -24,18 +24,23 @@
                     <td>{{ obj.quiz }}</td>
                     <td>{{ obj.score }}</td>
                     <td>{{ obj.date }}</td>
+                    <td>{% if obj.score == "100.0%" %}
+                            <span style="color: darkgreen">Нет ошибок</span>
+                        {% else %}
+                            <a href="{% url 'quiz:test_errors' obj.id %}" role="button" class="btn btn-warning">Ошибки</a>
+                        {% endif %}
+                    </td>
                     <td>
-                        <button class="btn btn-danger" type="submit">Пройти еще раз</button>
+                        {% for key,value in quiz_id_dict.items %}
+                            {% if key == obj.quiz %}
+                                <a href="{% url 'quiz:reset_start_test' topic value %}" role="button" class="btn btn-info">Пройти тест</a>
+                            {% endif %}
+                        {% endfor %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <br>
-    </div>
-    <div class="col-md-8 mx-auto">
-        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
-        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}

@@ -13,6 +13,7 @@ admin.site.unregister(Group)
 @admin.register(QuestionMark)
 class QuestionMarkAdmin(admin.ModelAdmin):
     list_display = ['question', 'user', 'get_test_name', 'done_correct', 'user_answer', 'corr_answer', 'processed']
+    list_filter = ['user']
 
     def get_test_name(self, obj):
         q = Question.objects.filter(id=obj.question.id).first()

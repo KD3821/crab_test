@@ -3,9 +3,16 @@
 {% block title %}Ошибки теста{% endblock %}
 
 {% block content %}
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'quiz:tests' topic.id %}">Набор: {{ topic.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Тест: "{{ test }}"</li>
+    </ol>
+</nav>
 <div class="row">
     <div class="col-md-10 mx-auto mb-3">
-        <h3> Тест "{{ test }}" от {{ mark.date }}:</h3>
+        <h4>Ошибки теста "{{ test }}" от {{ mark.date }}:</h4>
         <table class="table">
              <thead>
                 <th>Вопрос:</th>
@@ -44,10 +51,7 @@
                     <td style="border: 1px solid black;">неправильных ответов</td>
                     <td style="border: 1px solid black;">результат в %</td>
                     <td rowspan="2" style="border: 1px solid black;">
-                        <form id="reset_res_form" method="POST">
-                            <input type="hidden" name="t_id" value="{{test.id}}">
-                            <button class="btn btn-danger" type="submit">Сбросить результат<br>и пройти еще раз</button>
-                        </form>
+                        <a href="{% url 'quiz:reset_start_test' topic.id test.id %}" role="button" class="btn btn-danger">Пройти тест<br>еще раз</a>
                     </td>
                 </tr>
                 </tr>
@@ -58,10 +62,6 @@
                 </tr>
             </tbody>
         </table>
-    </div>
-    <div class="col-md-8 mx-auto">
-        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
-        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}

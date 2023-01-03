@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-10 mx-auto mb-3">
-        <h3> Тест "{{ test }}":</h3>
+        <h3> Тест "{{ test_obj }}":</h3>
         <table class="table">
              <thead>
                 <th>Вопрос:</th>
@@ -17,8 +17,24 @@
                 {% for obj in marks %}
                 <tr>
                     <td>{{ obj.question }}</td>
-                    <td>{{ obj.user_answer }}</td>
-                    <td>{{ obj.corr_answer }}</td>
+                    <td>
+                        {% for key,value in u_a_dict.items %}
+                            {% if key == obj %}
+                                {% for val in value %}
+                                    {{ val }}<br>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for key,value in c_a_dict.items %}
+                            {% if key == obj %}
+                                {% for val in value %}
+                                    {{ val }}<br>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
                     <td>
                         {% if obj.done_correct %}
                             <img src="/static/admin/img/icon-yes.svg" alt="Правильно">
@@ -33,7 +49,7 @@
         <br>
         <table align="center" cellpadding="5" style="border: 1px solid black;">
             <thead>
-                <th colspan="4" align="right">Итоговый результат по тесту "{{ test }}" от <b>{{ date }}</b></th>
+                <th colspan="4" align="right">Итоговый результат по тесту "{{ test_obj }}" от <b>{{ date }}</b></th>
             </thead>
             <tbody>
                 <tr>
@@ -41,10 +57,7 @@
                     <td style="border: 1px solid black;">неправильных ответов</td>
                     <td style="border: 1px solid black;">результат в %</td>
                     <td rowspan="2" style="border: 1px solid black;">
-                        <form id="reset_res_form" method="POST">
-                            <input type="hidden" name="t_id" value="{{test.id}}">
-                            <button class="btn btn-danger" type="submit">Сбросить результат<br>и пройти еще раз</button>
-                        </form>
+                        <a href="{% url 'quiz:reset_start_test' topic test %}" role="button" class="btn btn-danger">Пройти тест<br>еще раз</a>
                     </td>
                 </tr>
                 </tr>
@@ -55,10 +68,6 @@
                 </tr>
             </tbody>
         </table>
-    </div>
-    <div class="col-md-8 mx-auto">
-        <a href="{% url 'quiz:all_topics' %}"role="button" class="btn btn-info">Все темы</a>
-        <a href="{% url 'quiz:history_topics' %}"role="button" class="btn btn-info">Результаты</a>
     </div>
 </div>
 {% endblock %}

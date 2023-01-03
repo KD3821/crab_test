@@ -2,9 +2,13 @@ from django.shortcuts import render, HttpResponseRedirect
 from django.urls import reverse
 from django.views import View
 from .models import *
-from html import unescape, escape
+from html import unescape
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
+@login_required
 def del_q_marks(request, topic, test):
     user = request.user
     test_obj = Quiz.objects.filter(id=test).first()
@@ -28,7 +32,7 @@ class TestsView(View):
         return render(request, 'tests.html', {'topic': topic, 'tests': tests, 'user': user})
 
 
-class StartTestView(View):
+class StartTestView(LoginRequiredMixin, View):
     def get(self, request, topic, test):
         user = request.user
         test_id = test
@@ -58,7 +62,7 @@ class StartTestView(View):
         return HttpResponseRedirect(reverse('quiz:start_test', args=[topic, test_id]))
 
 
-class ResultTestView(View):
+class ResultTestView(LoginRequiredMixin, View):
     def get(self, request, topic, test):
         user = request.user
         topic_obj = Topic.objects.filter(id=topic).first()
@@ -70,14 +74,33 @@ class ResultTestView(View):
                 corr_count = q_marks.filter(done_correct=True).count()
                 wrong_count = q_marks.count() - corr_count
                 score = str(round((corr_count/q_marks.count() * 100), 2)) + '%'
-                date = datetime.now()
+                # date = datetime.now()
+                date = timezone.now()
                 TestMark.objects.create(user=user, topic=topic_obj.name, quiz=test_obj.name, score=score, date=date)
                 t_mark = TestMark.objects.filter(user=user).filter(quiz=test_obj.name).filter(date=date).first()
                 q_marks_wrong = q_marks.filter(done_correct=False)
                 for i in q_marks_wrong:
                     ErrorObject.objects.create(user=user, question=i.question, test_mark=t_mark, test_date=date, wrong_answers=i.user_answer)
                 q_marks.update(processed=True)
-                return render(request, 'result.html', {'test': test_obj, 'marks': q_marks, 'score': score, 'wrong': wrong_count, 'correct': corr_count, 'date': date})
+                user_answer_dict = {}
+                corr_answer_dict = {}
+                for qm in q_marks:
+                    usr_ans_list = []
+                    tmp_u_ans_list = qm.user_answer.strip("[]").split(",")
+                    for i in tmp_u_ans_list:
+                        usr_ans_list.append(int(i.strip().strip("''")))
+                    usr_ans_qs = Option.objects.filter(id__in=usr_ans_list).order_by('id')
+                    for i in usr_ans_qs:
+                        i.answer_text = unescape(i.answer_text)
+                    user_answer_dict[qm] = usr_ans_qs
+                    cor_ans_qs = Option.objects.filter(question=qm.question).filter(is_correct=True).order_by('id')
+                    for i in cor_ans_qs:
+                        i.answer_text = unescape(i.answer_text)
+                    corr_answer_dict[qm] = cor_ans_qs
+                return render(request, 'result.html', {'test': test, 'topic': topic, 'test_obj': test_obj,
+                                                       'marks': q_marks, 'score': score, 'wrong': wrong_count,
+                                                       'correct': corr_count, 'date': date, 'u_a_dict': user_answer_dict,
+                                                       'c_a_dict': corr_answer_dict})
             else:
                 topic_obj = Topic.objects.filter(id=topic).first()
                 tests = Quiz.objects.filter(id=test)
@@ -88,13 +111,14 @@ class ResultTestView(View):
             return render(request, 'error.html', {'topic': topic, 'topic_obj': topic_obj, 'tests': tests})
 
 
+@login_required
 def view_errors(request, test_mark):
     user = request.user
     mark = TestMark.objects.filter(id=test_mark).first()
     topic_name = mark.topic
     topic_obj = Topic.objects.filter(name=topic_name).first()
-    test_obj = mark.quiz
-    test = Quiz.objects.filter(name=test_obj).first()
+    test_name = mark.quiz
+    test_obj = Quiz.objects.filter(name=test_name).first()
     tests = Quiz.objects.filter(topic=topic_obj)
     try:
         ErrorObject.objects.filter(user=user).filter(test_mark=test_mark)[0:1].get()
@@ -113,26 +137,39 @@ def view_errors(request, test_mark):
             compare_dict['cor'] = cor_qs
             compare_dict['err'] = err_qs
             errors_dict[e] = compare_dict
-        total_q_count = test.question_set.count()
+        total_q_count = test_obj.question_set.count()
         err_q_count = errors.count()
         cor_q_count = total_q_count - err_q_count
         return render(request, 'mistakes.html', {'topic': topic_obj, 'test': test_obj, 'mark': mark, 'errors': errors,
-                                                 'errors_dict': errors_dict, 'cor_count': cor_q_count, 'err_count': err_q_count})
+                                                 'errors_dict': errors_dict, 'cor_count': cor_q_count,
+                                                 'err_count': err_q_count})
     except ErrorObject.DoesNotExist:
         return render(request, 'error.html', {'topic': topic_obj.id, 'topic_obj': topic_obj, 'tests': tests})
 
 
-class HistoryTopicView(View):
+class HistoryTopicView(LoginRequiredMixin, View):
     def get(self, request, topic):
         user = request.user
         topic_obj = Topic.objects.filter(id=topic).first()
         qs = TestMark.objects.filter(user=user).filter(topic=topic_obj).order_by('quiz', '-date')
-        return render(request, 'history.html', {'topic': topic_obj, 'attempts': qs})
+        quiz_id_dict = {}
+        quiz_qs = Quiz.objects.filter(topic=topic)
+        for quiz in quiz_qs:
+            quiz_id_dict[quiz.name] = quiz.id
+        return render(request, 'history.html', {'topic': topic, 'topic_obj': topic_obj, 'attempts': qs, 'quiz_id_dict': quiz_id_dict})
 
 
-class HistoryAllTopicView(View):
+class HistoryAllTopicView(LoginRequiredMixin, View):
     def get(self, request):
         user = request.user
         qs = TestMark.objects.filter(user=user).order_by('quiz', '-date')
-        return render(request, 'history_all.html', {'attempts': qs})
+        topic_id_info = {}
+        quiz_id_info = {}
+        topic_qs = Topic.objects.all()
+        quiz_qs = Quiz.objects.all()
+        for topic in topic_qs:
+            topic_id_info[topic.name] = topic.id
+        for quiz in quiz_qs:
+            quiz_id_info[quiz.name] = quiz.id
+        return render(request, 'history_all.html', {'attempts': qs, 'topic_id_info': topic_id_info, 'quiz_id_info': quiz_id_info})
 

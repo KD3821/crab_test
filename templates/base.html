@@ -24,7 +24,7 @@
                         <ul class="navbar-nav mr-auto">
                             {% if user.is_authenticated %}
                             <li class="nav-item ">
-                                <a class="nav-link" href="#">Инфо</a>
+                                <a class="nav-link" href="{% url 'quiz:history_topics' %}">Инфо</a>
                             </li>
                             <li class="nav-item ">
                                 <a class="nav-link" href="#" >Сменить пароль</a>
@@ -44,18 +44,19 @@
                     </div>
                 </div>
             </nav>
+            {% if user.is_authenticated %}
+            <div class="col-md-3 offset-md-9">
+                <strong>Вы вошли как:   <span style="color: green;">{{ user.name }}</span></strong><br>
+            {% else %}
+            </div>
+            <div class="col-md-3 offset-md-9">
+                <strong><span style="color: red;">Вы не авторизованы</span></strong><br>
+            {% endif %}
+            </div>
         </div>
         <div class="container">
             <div class="row">
-                {% if user.is_authenticated %}
-                <div class="col-md-3 offset-md-9">
-                    <strong>Вы вошли как:   <span style="color: green;">{{ user.name }}</span></strong><br>
-                {% else %}
-                </div>
-                <div class="col-md-3 offset-md-9">
-                    <strong><span style="color: red;">Вы не авторизованы</span></strong><br>
-                {% endif %}
-                </div>
+
                 <div class="col-4 mx-auto my-3">
                     {% if messages %}
                         {% for message in messages %}
