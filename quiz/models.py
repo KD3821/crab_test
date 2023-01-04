@@ -169,7 +169,3 @@ class ErrorObject(models.Model):
     test_date = DateTimeField(blank=True)
     wrong_answers = CharField(max_length=200, verbose_name='Неправильно', null=True, blank=True)
 
-    # def save(self, *args, **kwargs):
-    #     qstn_mark = QuestionMark.objects.filter(question=self.question).filter(user=self.user).first()
-    #     self.wrong_answers = qstn_mark.user_answer
-    #     super().save(*args, **kwargs)

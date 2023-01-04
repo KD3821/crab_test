@@ -35,4 +35,16 @@
         </table>
     </div>
 </div>
+<script>
+    function CheckValidity(e) {
+        let checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+        if (checkboxes.length == 0) {
+            alert("Необходимо выбрать ответ(ы) на вопрос.")
+            e.preventDefault()
+        }
+        return true
+    }
+    let questionForm = document.getElementById("question_form")
+    questionForm.addEventListener("submit", CheckValidity, false)
+</script>
 {% endblock %}

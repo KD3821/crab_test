@@ -48,7 +48,8 @@ class StartTestView(LoginRequiredMixin, View):
                 options = q.option_set.filter(question=q)
                 for option in options:
                     option.answer_text = unescape(option.answer_text)
-                return render(request, 'question.html', {'topic': topic, 'topic_obj': topic_obj, 'test': test, 'question': q.text, 'options': options, 'q_id': q.id})
+                return render(request, 'question.html', {'topic': topic, 'topic_obj': topic_obj, 'test': test,
+                                                         'question': q.text, 'options': options, 'q_id': q.id})
         return HttpResponseRedirect(reverse('quiz:test_res', args=[topic, test_id]))
 
     def post(self, request, topic, test):
@@ -130,8 +131,11 @@ def view_errors(request, test_mark):
             for i in cor_qs:
                 i.answer_text = unescape(i.answer_text)
             tmp_e_list = e.wrong_answers
-            e_list = tmp_e_list.strip("['']").split(",")
-            err_qs = Option.objects.filter(id__in=e_list)
+            e_list_ok = []
+            e_list = tmp_e_list.strip("[]").split(",")
+            for i in e_list:
+                e_list_ok.append(int(i.strip().strip("''")))
+            err_qs = Option.objects.filter(id__in=e_list_ok)
             for i in err_qs:
                 i.answer_text = unescape(i.answer_text)
             compare_dict['cor'] = cor_qs

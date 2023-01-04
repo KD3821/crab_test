@@ -6,7 +6,7 @@
 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'quiz:all_topics' %}">Начало</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'quiz:tests' topic.id %}">Набор: {{ topic.name }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'quiz:history_tests' topic.id %}">Ошибки набора "{{ topic.name }}"</a></li>
         <li class="breadcrumb-item active" aria-current="page">Тест: "{{ test }}"</li>
     </ol>
 </nav>
