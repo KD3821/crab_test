@@ -8,8 +8,12 @@
         <h4>Наборы тестов:</h4>
         <div class="row">
             {% for obj in topics %}
-            <div class="card" style="width: 18rem;">
-                <img src="..." class="card-img-top" alt="...">
+            <div class="card" style="width: 18rem; margin: 15px 20px;">
+                {% if obj.picture.url != None %}
+                    <img src={{ obj.picture.url }} class="card-img-top" alt="лого_теста">
+                {% else %}
+                    <img src='...' class="card-img-top" alt="лого_теста">
+                {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ obj.name }}</h5>
                     <p class="card-text">{{ obj.about }}</p>

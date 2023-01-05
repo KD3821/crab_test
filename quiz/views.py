@@ -190,5 +190,3 @@ def search_tests(request):
         return render(request, 'search_tests.html', {'searched': searched, 'search_result': search_result, 'reply': reply})
     else:
         return render(request, 'search_error.html', {})
-
-

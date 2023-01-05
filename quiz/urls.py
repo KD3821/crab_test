@@ -1,5 +1,8 @@
 from django.urls import path, include
 from .views import StartView, TestsView, StartTestView, ResultTestView, HistoryTopicView, HistoryAllTopicView, del_q_marks, view_errors, search_tests
+
+
+
 urlpatterns = [
     path('topics/', StartView.as_view(), name='all_topics'),
     path('topics/<int:topic>/', TestsView.as_view(), name='tests'),
@@ -11,3 +14,4 @@ urlpatterns = [
     path('topics/err/<int:test_mark>/', view_errors, name='test_errors'),
     path('topics/search/', search_tests, name="search")
 ]
+
