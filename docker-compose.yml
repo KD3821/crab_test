@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15.2
+    container_name: quiz_postgres
+    volumes:
+      - ~/volumes/db:/var/lib/postgresql/data
+    env_file:
+      - .env
+  app:
+    image: quiz_app_docker:latest
+    container_name: quiz_app
+    depends_on:
+      - db
+    volumes:
+      - static_volume:/quiz_app/static
+      - media_volume:/quiz_app/media
+    env_file:
+      - .env
+    command: >
+      bash -c "./manage.py collectstatic --noinput && ./manage.py migrate && gunicorn -b 0.0.0.0:8001 quiz_app.wsgi:application"
+  nginx:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./docker/nginx/
+    image: quiz_nginx
+    container_name: quiz_nginx
+    volumes:
+      - static_volume:/quiz_app/static
+      - media_volume:/quiz_app/media
+    depends_on:
+      - app
+    ports:
+      - "${NGINX_EXTERNAL_PORT}:80"
+
+volumes:
+  static_volume:
+  media_volume:
