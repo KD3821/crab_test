@@ -3,6 +3,11 @@ build-job:
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
 
+test-job0:
+  stage: test
+  script:
+    - echo "Try the new file"
+
 test-job1:
   stage: test
   script:
