@@ -6,7 +6,7 @@ test-job:
   stage: test
   script:
     - docker-compose -f docker/test/docker-compose.yml down
-    - docker-compose -f docker/test/docker-compose.yml build quiz_app_docker
+    - docker-compose -f docker/test/docker-compose.yml build app
     - docker-compose -f docker/test/docker-compose.yml up --abort-on-container-exit
 
 delivery-job:
