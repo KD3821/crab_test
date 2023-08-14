@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15.2
+    container_name: quiz_postgres
+    env_file:
+      - $env
+  app:
+    image: quiz_app_docker:test
+    build:
+      context: ../../.
+    container_name: quiz_app
+    env_file:
+      - $env
+    depends_on:
+      - db
+    command: >
+      bash -c "sleep 10 && export DJANGO_SETTINGS_MODULE=tests_app.settings && pytest"
