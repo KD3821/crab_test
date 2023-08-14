@@ -11,8 +11,6 @@ test-job:
 
 delivery-job:
   stage: delivery
-  only:
-    - main
   script:
     - docker login -p $CI_REGISTRY_PASSWORD -u $CI_REGISTRY_USER $CI_REGISTRY
     - docker tag quiz_app_docker:test $CI_REGISTRY_IMAGE
