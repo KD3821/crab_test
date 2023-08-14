@@ -4,6 +4,7 @@ from django.contrib import messages
 from .models import User
 from .forms import UserLoginForm, UserRegisterForm
 
+
 def show_users(request):
     users = User.objects.all()
     return render(request, 'users.html', {'users': users})

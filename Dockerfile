@@ -10,9 +10,9 @@ RUN apt update && apt -qy install gcc libjpeg-dev libpq-dev postgresql-client
 
 RUN useradd -rms /bin/sash quiz_user && chmod 777 /opt /run
 
-WORKDIR /quiz_app
+WORKDIR /quiz_app/
 
-RUN mkdir /quiz_app/static && mkdir /quiz_app/media && chown -R quiz_user:quiz_user /quiz_app && chmod 755 /quiz_app
+RUN mkdir /quiz_app/media && chown -R quiz_user:quiz_user /quiz_app && chmod 755 /quiz_app
 
 COPY --chown=quiz_user:quiz_user . .
 

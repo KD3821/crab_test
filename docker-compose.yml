@@ -5,7 +5,7 @@ services:
     image: postgres:15.2
     container_name: quiz_postgres
     volumes:
-      - ~/volumes/db:/var/lib/postgresql/data
+      - ./volumes/db:/var/run/postgresql/data
     env_file:
       - .env
   app:
@@ -19,7 +19,7 @@ services:
     env_file:
       - .env
     command: >
-      bash -c "./manage.py collectstatic --noinput && ./manage.py migrate && gunicorn -b 0.0.0.0:8001 quiz_app.wsgi:application"
+      bash -c "./manage.py collectstatic --noinput && ./manage.py migrate && gunicorn -b 0.0.0.0:8001 tests_app.wsgi:application"
   nginx:
     build:
       dockerfile: ./Dockerfile
