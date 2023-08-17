@@ -8,7 +8,7 @@ RUN pip install --upgrade pip
 
 RUN apt update && apt -qy install gcc libjpeg-dev libpq-dev postgresql-client
 
-RUN useradd -rms /bin/sash quiz_user && chmod 777 /opt /run
+RUN useradd -rms /bin/bash quiz_user && chmod 777 /opt /run
 
 WORKDIR /quiz_app/
 
