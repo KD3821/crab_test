@@ -12,7 +12,7 @@ WORKDIR /quiz_app/
 
 COPY . /quiz_app/
 
-RUN mkdir /quiz_app/media
+RUN mkdir /quiz_app/media && chmod o+r -R /quiz_app
 
 RUN pip install -r requirements.txt
 

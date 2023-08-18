@@ -1,19 +1,15 @@
 version: "3.9"
 
 services:
-  db:
-    image: postgres:15.2
-    container_name: quiz_postgres
-    volumes:
-      - ./volumes/db:/var/run/postgresql/data
-    env_file:
-      - .env
   app:
     image: ${DOCKER_REGISTRY}/quiz_app_docker:latest
     container_name: quiz_app
-    depends_on:
-      - db
+    expose:
+      - ${PORT}
+    ports:
+      - ${PORT}:${PORT}
     volumes:
+      - .:/quiz_app
       - ./static:/quiz_app/static
       - ./media:/quiz_app/media
     env_file:
