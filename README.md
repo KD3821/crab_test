@@ -1,4 +1,5 @@
 # crab_test
+![Alt text](/crab_test.png)
 
 <h1 align="center">Service for creating and running simple online Quizzes (based on Python-Django)</h1>
 <p align="center">
